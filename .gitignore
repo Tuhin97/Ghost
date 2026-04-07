@@ -1,0 +1,21 @@
+# Secrets
+.env
+credentials.json
+token.pickle
+ghost_key
+ghost_key.pub
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Data (ChromaDB, SQLite)
+data/
+
+# Audio cache
+*.mp3
+
+# OS
+.DS_Store
