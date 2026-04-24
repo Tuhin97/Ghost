@@ -39,6 +39,7 @@ from memory import get_memory
 from persona import build_messages, get_system_prompt_with_cache
 from transport.websocket_manager import WebSocketManager
 from agents.file_agent import search_files, format_results
+from agents.email_agent import read_emails, send_email, format_emails_for_display
 
 
 # ── Rate limiter ──────────────────────────────────────────────────────────────
@@ -260,6 +261,33 @@ async def _dispatch(action: dict, device_id: str) -> str:
     # ── unknown ───────────────────────────────────────────────────────────────
     elif action_name == "unknown":
         return ghost_reply or "I didn't catch that. Could you rephrase?"
+    
+    # ── read_email ────────────────────────────────────────────────────────────
+    elif action_name == "read_email":
+        count = params.get("count", 10)
+        try:
+            emails = read_emails(count)
+            return format_emails_for_display(emails)
+        except Exception as e:
+            return f"Couldn't read emails: {e}"
+
+    # ── send_email ────────────────────────────────────────────────────────────
+    elif action_name == "send_email":
+        to      = params.get("to", "")
+        subject = params.get("subject", "")
+        body    = params.get("body", "")
+        attachment = params.get("attachment_path", None)
+
+        if not to:
+            return "I need an email address to send to."
+        try:
+            result = send_email(to, subject, body, attachment)
+            return f"{ghost_reply}\n\nEmail sent to {result['to']} — subject: {result['subject']}"
+        except ValueError as e:
+            return f"Attachment blocked for security: {e}"
+        except Exception as e:
+            return f"Couldn't send email: {e}"
+
 
     # ── not yet implemented ───────────────────────────────────────────────────
     else:
