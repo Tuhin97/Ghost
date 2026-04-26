@@ -41,6 +41,7 @@ from persona import build_messages, get_system_prompt_with_cache
 from transport.websocket_manager import WebSocketManager
 from agents.file_agent import search_files, format_results
 from agents.email_agent import read_emails, send_email, format_emails_for_display
+from agents.calendar_agent import get_events, create_event
 from monitor.poller import start_poller
 from monitor.mqtt_subscriber import start_subscriber
 
@@ -306,6 +307,29 @@ async def _dispatch(action: dict, device_id: str) -> str:
         except Exception as e:
             return f"Couldn't send email: {e}"
 
+    # ── calendar_read ──────────────────────────────────────────────────────────
+    elif action_name == "calendar_read":
+        days = params.get("days", 7)
+        try:
+            events = get_events(days)
+            return f"{ghost_reply}\n\n{events}"
+        except Exception as e:
+            return f"Couldn't fetch calendar: {e}"
+
+    # ── calendar_add ─────────────────────────────────────────────────
+    elif action_name == "calendar_add":
+        title       = params.get("title", "")
+        start       = params.get("start", "")
+        end         = params.get("end", "")
+        description = params.get("description", None)
+
+        if not title or not start or not end:
+            return "I need a title, start time and end time to create an event."
+        try:
+            result = create_event(title, start, end, description)
+            return f"{ghost_reply}\n\n{result}"
+        except Exception as e:
+            return f"Couldn't create event: {e}"
 
     # ── not yet implemented ───────────────────────────────────────────────────
     else:
