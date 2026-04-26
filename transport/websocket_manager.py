@@ -32,6 +32,11 @@ class WebSocketManager:
         # Starts empty — connections are added as devices connect
         self._connections: dict = {}
 
+        # Asyncio event loop — set at server startup in orchestrator.py
+        # Needed by MQTT subscriber to schedule broadcasts from paho's thread
+        self.loop = None
+
+
     async def connect(self, websocket: WebSocket, device_id: str):
         """
         Accept a new WebSocket connection and register it.
@@ -91,7 +96,7 @@ class WebSocketManager:
                 # Connection dropped unexpectedly — clean it up
                 self.disconnect(device_id)
 
-    async def broadcast(self, message: dict):
+    async def broadcast(self, message):
         """
         Send a message to ALL connected devices simultaneously.
 
@@ -115,7 +120,10 @@ class WebSocketManager:
 
         for device_id, websocket in self._connections.items():
             try:
-                await websocket.send_json(message)
+                if isinstance(message, str):
+                    await websocket.send_text(message)
+                else:
+                    await websocket.send_json(message)
             except Exception:
                 # Mark for removal — don't remove yet
                 disconnected.append(device_id)

@@ -42,6 +42,7 @@ from transport.websocket_manager import WebSocketManager
 from agents.file_agent import search_files, format_results
 from agents.email_agent import read_emails, send_email, format_emails_for_display
 from monitor.poller import start_poller
+from monitor.mqtt_subscriber import start_subscriber
 
 
 # ── Rate limiter ──────────────────────────────────────────────────────────────
@@ -67,16 +68,24 @@ async def lifespan(app: FastAPI):
     print(f"[Ghost] Online — {config.SERVER_HOST}:{config.SERVER_PORT}")
     print(f"[Ghost] Memory: {get_memory().count()} stored interactions")
 
+    # Store the event loop on ws_manager so paho's thread can
+    # schedule async broadcasts via asyncio.run_coroutine_threadsafe()
+    ws_manager.loop = asyncio.get_running_loop()
 
     # Start health poller as a background task
     # asyncio.create_task() launches it concurrently — it doesn't block startup
     # The poller runs alongside the server for its entire lifetime
     poller_task = asyncio.create_task(start_poller(ws_manager))
 
+    # Start MQTT subscriber as a background task
+    # Listens to ghost/alerts and forwards to WebSocket
+    subscriber_task = asyncio.create_task(start_subscriber(ws_manager))
+
     yield  # Server runs here — between startup and shutdown
 
-    # Shutdown - cancel the poller task to clean up properly
-    poller_task.cancel() 
+    # Shutdown — cancel both background tasks cleanly
+    poller_task.cancel()
+    subscriber_task.cancel()
     print("[Ghost] Shutting down.")
 
 
