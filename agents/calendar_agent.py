@@ -10,7 +10,8 @@ Actions supported:
 """
 
 import logging
-import os
+#import os
+from pathlib import Path
 import pickle
 from datetime import datetime, timedelta, timezone
 from typing import Optional
@@ -44,8 +45,10 @@ def _get_service():
     creds = None
 
     # Load existing token if it exists
-    if os.path.exists(config.GMAIL_TOKEN_PATH):
-        with open(config.GMAIL_TOKEN_PATH, "rb") as f:
+    TOKEN_PATH = Path(__file__).parent.parent / "token.pickle"
+
+    if TOKEN_PATH.exists():
+        with open(TOKEN_PATH, "rb") as f:
             creds = pickle.load(f)
 
     # If no valid credentials, refresh or re-authenticate
@@ -62,7 +65,7 @@ def _get_service():
             creds = flow.run_local_server(port=0)
 
         # Save the refreshed/new token for next time
-        with open(config.GMAIL_TOKEN_PATH, "wb") as f:
+        with open(TOKEN_PATH, "wb") as f:
             pickle.dump(creds, f)
 
     # Build and return the Calendar API client
