@@ -178,6 +178,7 @@ def _call_claude(
     user_input: str,
     device_id: str,
     memory_context: str = "",
+    model: str = config.MODEL_FAST,
 ) -> dict:
     """
     Send a command to Claude and get back a structured JSON action.
@@ -201,7 +202,7 @@ def _call_claude(
     system   = get_system_prompt_with_cache()
 
     api_response = claude.messages.create(
-        model=config.MODEL_SMART,
+        model=model,
         max_tokens=1024,
         system=system,
         messages=messages,
@@ -212,7 +213,7 @@ def _call_claude(
     cached = getattr(usage, "cache_read_input_tokens", 0) or 0
     _log_usage(
         device_id=device_id,
-        model=config.MODEL_SMART,
+        model=model,
         input_tokens=usage.input_tokens,
         output_tokens=usage.output_tokens,
         cached_tokens=cached,
@@ -282,11 +283,18 @@ async def _dispatch(action: dict, device_id: str) -> str:
 
     # ── device_status ─────────────────────────────────────────────────────────
     elif action_name == "device_status":
-        return ghost_reply or "Device monitoring coming in Weekend 3."
+        return ghost_reply or "Device monitoring coming in Weekend 7."
 
     # ── unknown ───────────────────────────────────────────────────────────────
     elif action_name == "unknown":
-        return ghost_reply or "I didn't catch that. Could you rephrase?"
+        # Haiku couldn't map this to an action — it's conversational
+        # Call Sonnet for a proper thoughtful response
+        smart_action = _call_claude(
+            user_input=params.get("raw", ghost_reply),
+            device_id=device_id,
+            model=config.MODEL_SMART,
+        )
+        return smart_action.get("response", ghost_reply) or "I didn't catch that. Could you rephrase?"
     
     # ── read_email ────────────────────────────────────────────────────────────
     elif action_name == "read_email":
