@@ -124,6 +124,7 @@ CPU_WARN_PCT           = 90
 RAM_WARN_PCT           = 90
 DEVICE_OFFLINE_SECONDS = 90
 GITHUB_POLL_MINUTES    = 15
+BRIEFING_HOUR          = 9      # hour to send morning briefing (UTC)
 
 # ── Rate limiting ─────────────────────────────────────────────────────────────
 RATE_LIMIT = "30/minute"

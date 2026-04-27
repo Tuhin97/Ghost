@@ -44,6 +44,7 @@ from agents.email_agent import read_emails, send_email, format_emails_for_displa
 from agents.calendar_agent import get_events, create_event
 from monitor.poller import start_poller
 from monitor.mqtt_subscriber import start_subscriber
+from monitor.briefing import start_briefing
 
 
 # ── Rate limiter ──────────────────────────────────────────────────────────────
@@ -82,11 +83,17 @@ async def lifespan(app: FastAPI):
     # Listens to ghost/alerts and forwards to WebSocket
     subscriber_task = asyncio.create_task(start_subscriber(ws_manager))
 
+    # Start morning briefing scheduler as a background task
+    # Checks every 60 seconds if it's time to send the briefing
+    briefing_task = asyncio.create_task(start_briefing(ws_manager))
+
+
     yield  # Server runs here — between startup and shutdown
 
     # Shutdown — cancel both background tasks cleanly
     poller_task.cancel()
     subscriber_task.cancel()
+    briefing_task.cancel()
     print("[Ghost] Shutting down.")
 
 
