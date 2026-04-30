@@ -178,7 +178,7 @@ def _call_claude(
     user_input: str,
     device_id: str,
     memory_context: str = "",
-    model: str = config.MODEL_FAST,
+    model: str = config.MODEL_SMART,
 ) -> dict:
     """
     Send a command to Claude and get back a structured JSON action.
@@ -367,6 +367,7 @@ class CommandRequest(BaseModel):
     """
     command: str
     context: Optional[str] = None  # optional extra context from client
+    dry_run: bool = False  # if true, execute actions with side effects
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
@@ -424,6 +425,14 @@ async def command(
 
     # Step 2 — ask Claude what to do
     action = _call_claude(body.command, device_id, memory_context)
+
+    if body.dry_run:
+        return {
+            "action":   action.get("action"),
+            "params":   action.get("params", {}),
+            "response": action.get("response", ""),
+            "device":   device_id,
+        }
 
     # Step 3 — dispatch to agent
     response_text = await _dispatch(action, device_id)

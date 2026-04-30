@@ -213,7 +213,22 @@ def send_email(
     """
     # Validate attachment path if provided
     if attachment_path:
+        attachment_path = str(Path(attachment_path).expanduser())
+        _DIR_ALIASES = {
+            "downloads": "Downloads",
+            "documents": "Documents",
+            "desktop":   "Desktop",
+            "pictures":  "Pictures",
+            "videos":    "Videos",
+            "music":     "Music",
+            "projects":  "Projects",
+            "code":      "Code",
+        }
+        parts = Path(attachment_path).parts
+        corrected = [_DIR_ALIASES.get(p.lower(), p) for p in parts]
+        attachment_path = str(Path(*corrected))
         _validate_attachment_path(attachment_path)
+
 
     try:
         service = _get_gmail_service()
@@ -341,3 +356,36 @@ def format_emails_for_display(emails: list[dict]) -> str:
         )
 
     return "\n".join(lines)
+
+
+def format_emails_for_voice(emails: list[dict]) -> str:
+    """
+    Format emails for voice readout — From and Subject only.
+
+    When Ghost reads emails aloud, we don't want the full preview
+    and date — that takes too long to speak and hear. This gives
+    a short, natural-sounding summary instead.
+
+    Args:
+        emails: list of email dicts from read_emails()
+
+    Returns:
+        short string suitable for text-to-speech
+    """
+    if not emails:
+        return "You have no unread emails."
+
+    # Opening line — natural spoken English
+    lines = [f"You have {len(emails)} unread email{'s' if len(emails) != 1 else ''}."]
+
+    for i, email in enumerate(emails, 1):
+        # Strip angle brackets from "Name <email@example.com>" format
+        # so Piper reads it naturally — "from John Smith" not "from John Smith less than..."
+        sender = email["from"]
+        if "<" in sender:
+            # Extract just the display name — e.g. "John Smith"
+            sender = sender.split("<")[0].strip().strip('"')
+
+        lines.append(f"{i}. From {sender}: {email['subject']}.")
+
+    return " ".join(lines)

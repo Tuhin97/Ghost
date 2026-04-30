@@ -17,5 +17,8 @@ data/
 # Audio cache
 *.mp3
 
+# Piper TTS models — large binary files, download separately
+voice/models/
+
 # OS
 .DS_Store

@@ -70,6 +70,8 @@ SAFE_SEARCH_PATHS = [
 GMAIL_CREDENTIALS_PATH: str = _optional("GMAIL_CREDENTIALS_PATH", "./credentials.json")
 
 # ── Voice ─────────────────────────────────────────────────────────────────────
+PIPER_MODEL_PATH: str = _optional("PIPER_MODEL_PATH", "./voice/models/en_US-lessac-medium.onnx")
+PIPER_SAMPLE_RATE: int = 22050  # sample rate for lessac-medium model
 ELEVEN_API_KEY: str  = _optional("ELEVEN_API_KEY")
 ELEVEN_VOICE_ID: str = _optional("ELEVEN_VOICE_ID")
 
