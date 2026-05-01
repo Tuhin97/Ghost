@@ -40,6 +40,7 @@ from memory import get_memory
 from persona import build_messages, get_system_prompt_with_cache
 from transport.websocket_manager import WebSocketManager
 from agents.file_agent import search_files, format_results
+from agents.browser_agent import search_and_summarise
 from agents.email_agent import read_emails, send_email, format_emails_for_display
 from agents.calendar_agent import get_events, create_event
 from monitor.poller import start_poller
@@ -346,6 +347,15 @@ async def _dispatch(action: dict, device_id: str) -> str:
             return f"{ghost_reply}\n\n{result}"
         except Exception as e:
             return f"Couldn't create event: {e}"
+        
+    # ── web_search ────────────────────────────────────────────────────────────
+    elif action_name == "web_search":
+        query = params.get("query", "")
+        try:
+            return search_and_summarise(query, claude, config.MODEL_FAST)
+        except Exception as e:
+            return f"Search failed: {e}"
+
 
     # ── not yet implemented ───────────────────────────────────────────────────
     else:
