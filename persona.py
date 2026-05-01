@@ -51,6 +51,8 @@ Action catalogue:
   job_search    → params: { "keywords": [str], "location": str, "remote": bool }
   smarthome     → params: { "action": str, "entity": str or null }
   device_status → params: {}
+  mac_command   → params: { "subaction": "find_file|open_app|open_url|list_files|get_running_apps|get_stats", "filename": str or null, "directory": str or null, "app_name": str or null, "url": str or null }
+  mac_stats     → params: {}
   notes         → params: { "action": "save" or "recall", "content": str }
   unknown       → params: { "raw": str }
 

@@ -41,6 +41,7 @@ from persona import build_messages, get_system_prompt_with_cache
 from transport.websocket_manager import WebSocketManager
 from agents.file_agent import search_files, format_results
 from agents.browser_agent import search_and_summarise
+from agents.mac_agent import find_file, open_app, open_url, list_files, get_running_apps, get_mac_stats
 from agents.email_agent import read_emails, send_email, format_emails_for_display
 from agents.calendar_agent import get_events, create_event
 from monitor.poller import start_poller
@@ -355,7 +356,36 @@ async def _dispatch(action: dict, device_id: str) -> str:
             return search_and_summarise(query, claude, config.MODEL_FAST)
         except Exception as e:
             return f"Search failed: {e}"
+        
+    # ── mac_command ───────────────────────────────────────────────────────────
+    elif action_name == "mac_command":
+        subaction  = params.get("subaction", "")
+        filename   = params.get("filename", "")
+        directory  = params.get("directory", "")
+        app_name   = params.get("app_name", "")
+        url        = params.get("url", "")
 
+        if subaction == "find_file":
+            return find_file(filename, directory)
+        elif subaction == "open_app":
+            return open_app(app_name)
+        elif subaction == "open_url":
+            return open_url(url)
+        elif subaction == "list_files":
+            return list_files(directory)
+        elif subaction == "get_running_apps":
+            return get_running_apps()
+        elif subaction == "get_stats":
+            return get_mac_stats()
+        else:
+            return "I didn't understand what you want to do on the Mac."
+
+    # ── mac_stats ─────────────────────────────────────────────────────────────
+    elif action_name == "mac_stats":
+        try:
+            return get_mac_stats()
+        except Exception as e:
+            return f"Couldn't get Mac stats: {e}"
 
     # ── not yet implemented ───────────────────────────────────────────────────
     else:
