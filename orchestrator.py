@@ -179,6 +179,7 @@ def _call_claude(
     device_id: str,
     memory_context: str = "",
     model: str = config.MODEL_SMART,
+    history: list = None,
 ) -> dict:
     """
     Send a command to Claude and get back a structured JSON action.
@@ -198,7 +199,7 @@ def _call_claude(
     Returns:
         dict with keys: action, params, response
     """
-    messages = build_messages(user_input, memory_context)
+    messages = build_messages(user_input, memory_context, history)
     system   = get_system_prompt_with_cache()
 
     api_response = claude.messages.create(
@@ -368,6 +369,7 @@ class CommandRequest(BaseModel):
     command: str
     context: Optional[str] = None  # optional extra context from client
     dry_run: bool = False  # if true, execute actions with side effects
+    history: Optional[list] = None  # optional conversation history for this command
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
@@ -424,7 +426,7 @@ async def command(
     memory_context = memory.recall(body.command)
 
     # Step 2 — ask Claude what to do
-    action = _call_claude(body.command, device_id, memory_context)
+    action = _call_claude(body.command, device_id, memory_context, history=body.history)
 
     if body.dry_run:
         return {

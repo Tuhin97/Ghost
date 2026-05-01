@@ -59,13 +59,19 @@ Never invent params that don't exist in the catalogue above.
 """
 
 
-def build_messages(user_command: str, memory_context: str = "") -> list:
+def build_messages(user_command: str, memory_context: str = "", history: list = None) -> list:
     """
     Build the messages list for a Claude API call.
 
     Memory context is injected before the command so Ghost has
     context from past sessions without busting the system prompt cache.
     """
+
+    messages=[]
+    
+    if history:
+        messages.extend(history)
+
     if memory_context:
         content = (
             f"[MEMORY — recent relevant interactions]\n"
@@ -76,7 +82,8 @@ def build_messages(user_command: str, memory_context: str = "") -> list:
     else:
         content = user_command
 
-    return [{"role": "user", "content": content}]
+    messages.append({"role": "user", "content": content})
+    return messages
 
 
 def get_system_prompt_with_cache() -> list:

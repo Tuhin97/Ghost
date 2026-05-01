@@ -30,6 +30,10 @@ load_dotenv()
 GHOST_URL = "http://localhost:8000/command"
 TOKEN     = os.getenv("DEVICE_TOKEN_THINKPAD")
 
+# Stores last N conversation turns so Ghost understands follow-on commands
+# Each entry is a tuple of (user_command, ghost_response)
+conversation_history = []
+MAX_HISTORY_TURNS = 4
 
 def _normalize_voice_text(text: str) -> str:
     """
@@ -47,10 +51,18 @@ def _normalize_voice_text(text: str) -> str:
 
 def send_to_ghost(text: str, dry_run: bool = False) -> dict:
     """Send transcribed text to Ghost. Returns full response dict."""
+
+    # Build history in Claude's alternating message format
+    # Each past turn becomes a user message followed by an assistant message
+    history_messages = []
+    for user_cmd, ghost_resp in conversation_history[-MAX_HISTORY_TURNS:]:
+        history_messages.append({"role": "user",      "content": user_cmd})
+        history_messages.append({"role": "assistant", "content": ghost_resp})
+
     text = _normalize_voice_text(text)
     response = requests.post(
         GHOST_URL,
-        json={"command": text, "dry_run": dry_run},
+        json={"command": text, "dry_run": dry_run, "history": history_messages or None},
         headers={"Authorization": f"Bearer {TOKEN}"},
         timeout=60,
     )
@@ -98,6 +110,7 @@ def main():
                         result = send_to_ghost(text, dry_run=False)
                         reply  = result.get("response", "Email sent.")
                         print(f"Ghost says: {reply}\n")
+                        conversation_history.append((text, reply))
                         speak(reply)
                         break
 
@@ -132,6 +145,7 @@ def main():
                 except Exception as e:
                     reply = f"Couldn't read your emails. {e}"
                 print(f"Ghost says: {reply}\n")
+                conversation_history.append((text, reply))
                 speak(reply)
 
             # ── Everything else — execute normally ────────────────────────────
@@ -139,6 +153,7 @@ def main():
                 data  = send_to_ghost(text, dry_run=False)
                 reply = data.get("response", "")
                 print(f"Ghost says: {reply}\n")
+                conversation_history.append((text, reply))
                 speak(reply)
 
         except KeyboardInterrupt:
