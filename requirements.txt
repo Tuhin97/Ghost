@@ -22,3 +22,4 @@ python-jose==3.5.0
 python-dotenv==1.2.2
 requests==2.33.1
 ddgs==9.14.1
+paramiko==4.0.0

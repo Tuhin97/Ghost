@@ -193,6 +193,7 @@ def send_email(
     subject: str,
     body: str,
     attachment_path: Optional[str] = None,
+    attachment_bytes: Optional[tuple] = None,
 ) -> dict:
     """
     Send an email via Gmail, optionally with a file attachment.
@@ -234,7 +235,7 @@ def send_email(
         service = _get_gmail_service()
 
         # Build the email message
-        message = _build_message(to, subject, body, attachment_path)
+        message = _build_message(to, subject, body, attachment_path, attachment_bytes)
 
         # Send it
         sent = service.users().messages().send(
@@ -290,6 +291,7 @@ def _build_message(
     subject: str,
     body: str,
     attachment_path: Optional[str] = None,
+    attachment_bytes: Optional[tuple] = None,  # (bytes, filename) from Mac
 ) -> str:
     """
     Build a MIME email message and encode it for the Gmail API.
@@ -308,7 +310,17 @@ def _build_message(
     Returns:
         base64url encoded message string ready for Gmail API
     """
-    if attachment_path:
+
+    if attachment_bytes:
+        # Attach file bytes from memory — used for Mac files streamed over SFTP
+        message = MIMEMultipart()
+        message.attach(MIMEText(body, "plain"))
+        file_data, filename = attachment_bytes
+        attachment = MIMEApplication(file_data, Name=filename)
+        attachment["Content-Disposition"] = f'attachment; filename="{filename}"'
+        message.attach(attachment)
+
+    elif attachment_path:
         # Multipart message — body + attachment
         message = MIMEMultipart()
         message.attach(MIMEText(body, "plain"))

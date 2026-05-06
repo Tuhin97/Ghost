@@ -236,3 +236,41 @@ def get_running_apps() -> str:
         return "Mac did not respond in time."
     except Exception as e:
         return f"Could not reach Mac: {e}"
+
+def get_file_bytes(filepath: str) -> tuple[bytes, str]:
+    """
+    Read a file from the Mac into memory over SFTP without saving to disk.
+
+    Args:
+        filepath: absolute path on the Mac e.g. /Users/tuhinanand/Downloads/file.pdf
+
+    Returns:
+        tuple of (file_bytes, filename)
+
+    Raises:
+        RuntimeError: if connection or file read fails
+    """
+    import paramiko
+
+    try:
+        # Set up SSH client
+        client = paramiko.SSHClient()
+        client.load_system_host_keys()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.connect(MAC_HOST, username=MAC_USER, timeout=SSH_TIMEOUT)
+
+        # Open SFTP session and read file into memory
+        sftp = client.open_sftp()
+        with sftp.file(filepath, "rb") as f:
+            file_bytes = f.read()
+
+        sftp.close()
+        client.close()
+
+        filename = filepath.split("/")[-1]
+        return file_bytes, filename
+
+    except FileNotFoundError:
+        raise RuntimeError(f"File not found on Mac: {filepath}")
+    except Exception as e:
+        raise RuntimeError(f"Could not read file from Mac: {e}")

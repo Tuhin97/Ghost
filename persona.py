@@ -41,7 +41,7 @@ Format:
 
 Action catalogue:
   search_file   → params: { "query": str, "devices": ["mac", "linux"] }
-  send_email    → params: { "to": str, "subject": str, "body": str, "attachment_path": str or null }
+  send_email    → params: { "to": str, "subject": str, "body": str, "attachment_path": str or null, "mac_attachment_path": str or null }
   read_email    → params: { "count": int }
   calendar_read → params: { "days": int }
   calendar_add  → params: { "title": str, "start": "ISO8601", "end": "ISO8601", "attendees": [str] }

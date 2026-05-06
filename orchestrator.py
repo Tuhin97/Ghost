@@ -310,15 +310,24 @@ async def _dispatch(action: dict, device_id: str) -> str:
 
     # ── send_email ────────────────────────────────────────────────────────────
     elif action_name == "send_email":
+        from agents.mac_agent import get_file_bytes
         to      = params.get("to", "")
         subject = params.get("subject", "")
         body    = params.get("body", "")
         attachment = params.get("attachment_path", None)
+        mac_path   = params.get("mac_attachment_path", None)
 
+        attachment_bytes = None
+        if mac_path:
+            try:
+                attachment_bytes = get_file_bytes(mac_path)
+            except RuntimeError as e:
+                return f"Couldn't read file from Mac: {e}"
+        
         if not to:
             return "I need an email address to send to."
         try:
-            result = send_email(to, subject, body, attachment)
+            result = send_email(to, subject, body, attachment, attachment_bytes)
             return f"{ghost_reply}\n\nEmail sent to {result['to']} — subject: {result['subject']}"
         except ValueError as e:
             return f"Attachment blocked for security: {e}"
