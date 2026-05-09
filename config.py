@@ -69,6 +69,10 @@ SAFE_SEARCH_PATHS = [
 # ── Google APIs ───────────────────────────────────────────────────────────────
 GMAIL_CREDENTIALS_PATH: str = _optional("GMAIL_CREDENTIALS_PATH", "./credentials.json")
 
+# ── Adzuna Job Search API ─────────────────────────────────────────────────────
+ADZUNA_APP_ID: str  = _optional("ADZUNA_APP_ID")
+ADZUNA_APP_KEY: str = _optional("ADZUNA_APP_KEY")
+
 # ── Voice ─────────────────────────────────────────────────────────────────────
 PIPER_MODEL_PATH: str = _optional("PIPER_MODEL_PATH", "./voice/models/en_US-lessac-medium.onnx")
 PIPER_SAMPLE_RATE: int = 22050  # sample rate for lessac-medium model
@@ -88,6 +92,11 @@ GITHUB_REPOS: list  = [
     for r in _optional("GITHUB_REPOS", "").split(",")
     if r.strip()
 ]
+
+# ── LinkedIn ─────────────────────────────────────────────────────────────────
+LINKEDIN_EMAIL: str    = _optional("LINKEDIN_EMAIL")
+LINKEDIN_PASSWORD: str = _optional("LINKEDIN_PASSWORD")
+CV_PATH: str = _optional("CV_PATH", "~/Documents/Tuhin_CV_Master.docx")
 
 # ── Home Assistant ────────────────────────────────────────────────────────────
 HOME_ASSISTANT_URL: str   = _optional("HOME_ASSISTANT_URL")

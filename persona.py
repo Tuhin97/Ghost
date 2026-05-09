@@ -48,7 +48,12 @@ Action catalogue:
   web_search    → params: { "query": str }
   open_url      → params: { "url": str }
   run_code      → params: { "task": str, "repo": str or null }
-  job_search    → params: { "keywords": [str], "location": str, "remote": bool }
+  job_search    → params: { "subaction": "search|score|tailor|fetch_url", "keywords": [str], "location": str, "remote": bool, "job_index": int or null, "url": str or null }
+  # subaction examples:
+  # "search for python jobs in Adelaide" → subaction: search
+  # "score my match for job 1" or "how well do i match job 2" → subaction: score, job_index: 1
+  # "tailor my resume for job 3" or "write cover letter for job 2" → subaction: tailor, job_index: 3
+  # "fetch job from url https://..." → subaction: fetch_url, url: "..."
   smarthome     → params: { "action": str, "entity": str or null }
   device_status → params: {}
   mac_command   → params: { "subaction": "find_file|open_app|open_url|list_files|get_running_apps|get_stats", "filename": str or null, "directory": str or null, "app_name": str or null, "url": str or null }
