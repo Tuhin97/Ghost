@@ -47,7 +47,7 @@ Action catalogue:
   calendar_add  → params: { "title": str, "start": "ISO8601", "end": "ISO8601", "attendees": [str] }
   web_search    → params: { "query": str }
   open_url      → params: { "url": str }
-  run_code      → params: { "task": str, "repo": str or null }
+  run_code      → params: { "task": str, "repo": str or null }  # use MODEL_BEST, repo defaults to ~/Projects if not specified
   job_search    → params: { "subaction": "search|score|tailor|fetch_url", "keywords": [str], "location": str, "remote": bool, "job_index": int or null, "url": str or null }
   # subaction examples:
   # "search for python jobs in Adelaide" → subaction: search

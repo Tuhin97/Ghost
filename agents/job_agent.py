@@ -178,21 +178,28 @@ async def fetch_job_from_url(url: str) -> str:
     Returns:
         job description as plain text
     """
+    import asyncio
     from playwright.async_api import async_playwright
+    from playwright_stealth import stealth_async
 
     if not config.LINKEDIN_EMAIL or not config.LINKEDIN_PASSWORD:
         raise RuntimeError("LinkedIn credentials not configured in .env")
 
     async with async_playwright() as p:
-        # Launch headless browser — no visible window
         browser = await p.chromium.launch(headless=True)
         page    = await browser.new_page()
 
+        # Apply stealth — hides Playwright fingerprint from bot detection
+        await stealth_async(page)
+
         try:
-            # Step 1 — log into LinkedIn
+            # Step 1 — log into LinkedIn with human-like delays
             await page.goto("https://www.linkedin.com/login")
+            await asyncio.sleep(1)
             await page.fill("#username", config.LINKEDIN_EMAIL)
+            await asyncio.sleep(0.5)
             await page.fill("#password", config.LINKEDIN_PASSWORD)
+            await asyncio.sleep(0.8)
             await page.click('[type="submit"]')
             await page.wait_for_load_state("networkidle")
 
