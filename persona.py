@@ -56,6 +56,11 @@ Action catalogue:
   # "fetch job from url https://..." → subaction: fetch_url, url: "..."
   smarthome     → params: { "action": str, "entity": str or null }
   device_status → params: {}
+  github_monitor → params: { "subaction": "monitor|repo_summary|list_repos", "repo": str or null }
+  # subaction examples:
+  # "check my github" or "any github alerts" → subaction: monitor
+  # "show me the Ghost repo" → subaction: repo_summary, repo: "Ghost"
+  # "list my repos" → subaction: list_repos
   mac_command   → params: { "subaction": "find_file|open_app|open_url|list_files|get_running_apps|get_stats", "filename": str or null, "directory": str or null, "app_name": str or null, "url": str or null }
   mac_stats     → params: {}
   notes         → params: { "action": "save" or "recall", "content": str }

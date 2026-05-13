@@ -87,6 +87,7 @@ MQTT_PASSWORD: str = _optional("MQTT_PASSWORD")
 
 # ── GitHub ────────────────────────────────────────────────────────────────────
 GITHUB_TOKEN: str   = _optional("GITHUB_TOKEN")
+GITHUB_USERNAME: str = _optional("GITHUB_USERNAME", "")
 GITHUB_REPOS: list  = [
     r.strip()
     for r in _optional("GITHUB_REPOS", "").split(",")

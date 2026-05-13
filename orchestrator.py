@@ -42,6 +42,7 @@ from transport.websocket_manager import WebSocketManager
 from agents.file_agent import search_files, format_results
 from agents.browser_agent import search_and_summarise
 from agents.coding_loop import run_coding_task
+from agents.github_agent import get_repo_summary, monitor_all_repos, get_all_repos
 from agents.job_agent import search_jobs, format_jobs, draft_cover_letter, score_match, tailor_resume, fetch_job_from_url
 from agents.mac_agent import find_file, open_app, open_url, list_files, get_running_apps, get_mac_stats
 from agents.email_agent import read_emails, send_email, format_emails_for_display
@@ -461,6 +462,37 @@ async def _dispatch(action: dict, device_id: str) -> str:
             )
         except Exception as e:
             return f"Coding task failed: {e}"
+        
+    # ── github ────────────────────────────────────────────────────────────────
+    elif action_name == "github_monitor":
+        subaction = params.get("subaction", "monitor")
+        repo      = params.get("repo", "")
+
+        try:
+            if subaction == "monitor":
+                return monitor_all_repos()
+
+            elif subaction == "repo_summary":
+                if not repo:
+                    return "Which repo do you want a summary of?"
+                # If just name given, prepend username
+                if "/" not in repo:
+                    repo = f"{config.GITHUB_USERNAME}/{repo}"
+                return get_repo_summary(repo)
+
+            elif subaction == "list_repos":
+                repos = get_all_repos()
+                if not repos:
+                    return "No repos found."
+                lines = [f"Your GitHub repos ({len(repos)}):"]
+                for r in repos:
+                    private = " [private]" if r["private"] else ""
+                    lines.append(f"  {r['full_name']}{private}")
+                return "\n".join(lines)
+
+        except Exception as e:
+            return f"GitHub error: {e}"
+        
     # ── not yet implemented ───────────────────────────────────────────────────
     else:
         return (
