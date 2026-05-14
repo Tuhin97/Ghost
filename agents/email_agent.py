@@ -33,7 +33,7 @@ from persona import sanitise_for_llm
 # Gmail API scopes — minimum permissions needed
 # modify = read + send + move to trash (no delete)
 # If you change scopes, delete token.pickle and re-authenticate
-SCOPES = ["https://www.googleapis.com/auth/gmail.modify"]
+SCOPES = ["https://www.googleapis.com/auth/gmail.modify",  "https://www.googleapis.com/auth/calendar",]
 
 # Where to save the OAuth2 token after first login
 TOKEN_PATH = Path(__file__).parent.parent / "token.pickle"
