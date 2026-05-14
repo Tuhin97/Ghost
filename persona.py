@@ -62,7 +62,12 @@ Action catalogue:
   # "show me the Ghost repo" → subaction: repo_summary, repo: "Ghost"
   # "list my repos" → subaction: list_repos
   mac_command   → params: { "subaction": "find_file|open_app|open_url|list_files|get_running_apps|get_stats", "filename": str or null, "directory": str or null, "app_name": str or null, "url": str or null }
-  mac_stats     → params: {}
+  # subaction examples:
+  # "find X on mac", "do I have X", "does mac downloads have X", "is X on my mac" → subaction: find_file, filename: "X", directory: extracted folder or null
+  # "open Spotify on mac" → subaction: open_app, app_name: "Spotify"
+  # "list mac downloads" → subaction: list_files, directory: "Downloads"
+  # "what's running on mac" → subaction: get_running_apps
+  # "mac stats" or "how is my mac doing" → subaction: get_stats
   notes         → params: { "action": "save" or "recall", "content": str }
   unknown       → params: { "raw": str }
 

@@ -653,8 +653,9 @@ async def ws_chat(websocket: WebSocket):
             if not command_text:
                 continue
 
+            history = data.get("history", None)
             memory_context = memory.recall(command_text)
-            action         = _call_claude(command_text, device_id, memory_context)
+            action         = _call_claude(command_text, device_id, memory_context, history=history)
             response_text  = await _dispatch(action, device_id)
 
             memory.store(

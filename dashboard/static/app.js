@@ -2,6 +2,8 @@
 const TOKEN = localStorage.getItem('ghost_token') || promptForToken();
 let ws = null;
 let statusData = {};
+let conversationHistory = [];
+const MAX_HISTORY = 4;
 
 function promptForToken() {
     const token = prompt('Enter your Ghost API token:');
@@ -40,11 +42,16 @@ function connectWebSocket() {
     };
 
     ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        if (data.type === 'response') {
-            appendMessage('Ghost', data.text, 'ghost');
+    const data = JSON.parse(event.data);
+    if (data.type === 'response') {
+        appendMessage('Ghost', data.text, 'ghost');
+        // Store last sent message and this response
+        if (window._lastUserMessage) {
+            conversationHistory.push({role: 'user', content: window._lastUserMessage});
+            conversationHistory.push({role: 'assistant', content: data.text});
         }
-    };
+    }
+};
 }
 
 function setStatus(online) {
@@ -68,9 +75,10 @@ function sendMessage() {
     appendMessage('You', text, 'user');
     input.value = '';
 
+    window._lastUserMessage = text;
     // Send via WebSocket
     if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ command: text, token: TOKEN }));
+        ws.send(JSON.stringify({ command: text, token: TOKEN, history: conversationHistory.slice(-MAX_HISTORY * 2) }));
     } else {
         // Fallback to HTTP if WebSocket not connected
         fetch('/command', {
