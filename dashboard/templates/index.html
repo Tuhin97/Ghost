@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghost Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<!-- Top bar -->
+<header class="topbar">
+    <div class="topbar-left">
+        <span class="logo">👻 Ghost</span>
+        <span class="status-dot" id="status-dot"></span>
+        <span class="status-text" id="status-text">Connecting...</span>
+    </div>
+    <div class="topbar-right">
+        <span id="current-time"></span>
+    </div>
+</header>
+
+<!-- Main layout -->
+<div class="layout">
+
+    <!-- Left column — status cards -->
+    <div class="cards-column">
+
+        <!-- Devices card -->
+        <div class="card" onclick="openPanel('devices')">
+            <div class="card-header">
+                <span class="card-icon">💻</span>
+                <span class="card-title">Devices</span>
+                <span class="card-badge" id="devices-badge">—</span>
+            </div>
+            <div class="card-preview" id="devices-preview">Loading...</div>
+        </div>
+
+        <!-- GitHub card -->
+        <div class="card" onclick="openPanel('github')">
+            <div class="card-header">
+                <span class="card-icon">🐙</span>
+                <span class="card-title">GitHub</span>
+                <span class="card-badge" id="github-badge">—</span>
+            </div>
+            <div class="card-preview" id="github-preview">Loading...</div>
+        </div>
+
+        <!-- Email card -->
+        <div class="card" onclick="openPanel('email')">
+            <div class="card-header">
+                <span class="card-icon">✉️</span>
+                <span class="card-title">Email</span>
+                <span class="card-badge" id="email-badge">—</span>
+            </div>
+            <div class="card-preview" id="email-preview">Loading...</div>
+        </div>
+
+        <!-- Calendar card -->
+        <div class="card" onclick="openPanel('calendar')">
+            <div class="card-header">
+                <span class="card-icon">📅</span>
+                <span class="card-title">Calendar</span>
+                <span class="card-badge" id="calendar-badge">—</span>
+            </div>
+            <div class="card-preview" id="calendar-preview">Loading...</div>
+        </div>
+
+        <!-- API Usage card -->
+        <div class="card" onclick="openPanel('api')">
+            <div class="card-header">
+                <span class="card-icon">📊</span>
+                <span class="card-title">API Usage</span>
+                <span class="card-badge" id="api-badge">—</span>
+            </div>
+            <div class="card-preview" id="api-preview">Loading...</div>
+        </div>
+
+        <!-- Jobs card -->
+        <div class="card" onclick="openPanel('jobs')">
+            <div class="card-header">
+                <span class="card-icon">💼</span>
+                <span class="card-title">Jobs</span>
+                <span class="card-badge" id="jobs-badge">—</span>
+            </div>
+            <div class="card-preview" id="jobs-preview">No recent searches</div>
+        </div>
+
+    </div>
+
+    <!-- Right column — chat -->
+    <div class="chat-column">
+        <div class="chat-header">Chat</div>
+        <div class="chat-messages" id="chat-messages">
+            <div class="message ghost-message">
+                <span class="message-sender">Ghost</span>
+                <span class="message-text">Dashboard ready. What do you need?</span>
+            </div>
+        </div>
+        <div class="chat-input-row">
+            <input
+                type="text"
+                id="chat-input"
+                placeholder="Type a command..."
+                onkeydown="if(event.key==='Enter') sendMessage()"
+            />
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+</div>
+
+<!-- Slide-out panel overlay -->
+<div class="panel-overlay" id="panel-overlay" onclick="closePanel()"></div>
+
+<!-- Slide-out panel -->
+<div class="slide-panel" id="slide-panel">
+    <div class="panel-header">
+        <span class="panel-title" id="panel-title">Details</span>
+        <button class="panel-close" onclick="closePanel()">✕</button>
+    </div>
+    <div class="panel-content" id="panel-content">
+        Loading...
+    </div>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

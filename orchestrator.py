@@ -60,6 +60,36 @@ limiter = Limiter(key_func=get_remote_address)
 # Simple in-memory cache for job search results per device
 _job_cache: dict = {}
 
+# ── API usage cost calculation ─────────────────────────────────────────────────
+_MODEL_COSTS = {
+    "claude-opus-4-5":   {"input": 15.0,  "output": 75.0},
+    "claude-sonnet-4-5": {"input": 3.0,   "output": 15.0},
+    "claude-sonnet-4-6": {"input": 3.0,   "output": 15.0},
+    "claude-haiku-4-5":  {"input": 0.25,  "output": 1.25},
+}
+_DEFAULT_COST = {"input": 3.0, "output": 15.0}
+
+
+def _calc_cost_today() -> float:
+    today = datetime.now(timezone.utc).date().isoformat()
+    try:
+        with sqlite3.connect(config.API_USAGE_DB) as conn:
+            rows = conn.execute(
+                """SELECT model, SUM(input_tokens), SUM(output_tokens)
+                   FROM api_usage
+                   WHERE ts >= ?
+                   GROUP BY model""",
+                (f"{today}T00:00:00",),
+            ).fetchall()
+    except Exception:
+        return 0.0
+
+    total = 0.0
+    for model, inp, out in rows:
+        rates = _MODEL_COSTS.get(model, _DEFAULT_COST)
+        total += (inp or 0) / 1_000_000 * rates["input"]
+        total += (out or 0) / 1_000_000 * rates["output"]
+    return total
 
 # ── App startup and shutdown ──────────────────────────────────────────────────
 @asynccontextmanager
@@ -600,6 +630,45 @@ async def command(
     }
 
 
+@app.websocket("/ws/chat")
+async def ws_chat(websocket: WebSocket):
+    await websocket.accept()
+    memory = get_memory()
+
+    try:
+        while True:
+            data = await websocket.receive_json()
+            print(f"[ws/chat] received: {data}")
+
+            token = data.get("token", "")
+            try:
+                from auth import decode_token
+                payload   = decode_token(token)
+                device_id = payload.get("sub", "dashboard")
+            except Exception:
+                await websocket.send_json({"type": "error", "text": "Invalid token."})
+                continue
+
+            command_text = data.get("command", "").strip()
+            if not command_text:
+                continue
+
+            memory_context = memory.recall(command_text)
+            action         = _call_claude(command_text, device_id, memory_context)
+            response_text  = await _dispatch(action, device_id)
+
+            memory.store(
+                user_input=command_text,
+                ghost_response=response_text,
+                device_id=device_id,
+                action=action.get("action"),
+            )
+
+            await websocket.send_json({"type": "response", "text": response_text})
+
+    except WebSocketDisconnect:
+        pass
+    
 @app.websocket("/ws/{device_id}")
 async def websocket_endpoint(websocket: WebSocket, device_id: str):
     """
@@ -677,7 +746,143 @@ async def dashboard(request: Request):
     No JWT auth — Tailscale provides network-level security.
     Only devices on your Tailscale network can reach this.
     """
-    return templates.TemplateResponse(
-        "index.html",
-        {"request": request}
-    )
+    return templates.TemplateResponse(request, "index.html")
+
+@app.get("/api/status")
+async def api_status(_: str = Depends(verify_token)):
+    import psutil
+
+    result = {}
+
+    def _local_metrics():
+        return {
+            "cpu":  psutil.cpu_percent(interval=0.5),
+            "ram":  psutil.virtual_memory().percent,
+            "disk": psutil.disk_usage("/").percent,
+        }
+
+    thinkpad = await asyncio.to_thread(_local_metrics)
+    result["devices"] = {"thinkpad": thinkpad}
+
+    try:
+        from agents.github_agent import get_open_prs, get_open_issues
+        repos = config.GITHUB_REPOS or []
+        open_prs = 0
+        open_issues = 0
+        for repo in repos[:5]:
+            if "/" not in repo:
+                repo = f"{config.GITHUB_USERNAME}/{repo}"
+            open_prs    += len(get_open_prs(repo))
+            open_issues += len(get_open_issues(repo))
+        result["github"] = {"open_prs": open_prs, "open_issues": open_issues}
+    except Exception:
+        result["github"] = {"open_prs": 0, "open_issues": 0}
+
+    try:
+        emails = await asyncio.to_thread(read_emails, 20)
+        result["email"] = {"unread": len(emails)}
+    except Exception:
+        result["email"] = {"unread": 0}
+
+    try:
+        events_raw = await asyncio.to_thread(get_events, 1)
+        lines  = [l.strip() for l in events_raw.splitlines() if l.strip()]
+        events = [{"summary": l} for l in lines[:3]]
+        result["calendar"] = {"events": events}
+    except Exception:
+        result["calendar"] = {"events": []}
+
+    cost_today = await asyncio.to_thread(_calc_cost_today)
+    result["api_usage"] = {"cost_today": cost_today}
+
+    return result
+
+
+@app.get("/api/panel/{panel_type}")
+async def api_panel(panel_type: str, _: str = Depends(verify_token)):
+    import psutil
+    import platform
+
+    if panel_type == "devices":
+        def _get_metrics():
+            return {
+                "cpu":  psutil.cpu_percent(interval=1),
+                "ram":  psutil.virtual_memory().percent,
+                "disk": psutil.disk_usage("/").percent,
+            }
+        tp = await asyncio.to_thread(_get_metrics)
+        content = (
+            f"ThinkPad (local)\n"
+            f"  CPU:   {tp['cpu']}%\n"
+            f"  RAM:   {tp['ram']}%\n"
+            f"  Disk:  {tp['disk']}%\n"
+            f"  OS:    {platform.platform()}\n"
+        )
+        return {"content": content}
+
+    elif panel_type == "github":
+        try:
+            content = await asyncio.to_thread(monitor_all_repos)
+        except Exception as e:
+            content = f"GitHub error: {e}"
+        return {"content": content}
+
+    elif panel_type == "email":
+        try:
+            emails  = await asyncio.to_thread(read_emails, 10)
+            content = format_emails_for_display(emails)
+        except Exception as e:
+            content = f"Email error: {e}"
+        return {"content": content}
+
+    elif panel_type == "calendar":
+        try:
+            content = await asyncio.to_thread(get_events, 7)
+        except Exception as e:
+            content = f"Calendar error: {e}"
+        return {"content": content}
+
+    elif panel_type == "api":
+        today = datetime.now(timezone.utc).date().isoformat()
+        try:
+            with sqlite3.connect(config.API_USAGE_DB) as conn:
+                rows = conn.execute(
+                    """SELECT model, SUM(input_tokens), SUM(output_tokens), COUNT(*)
+                       FROM api_usage
+                       WHERE ts >= ?
+                       GROUP BY model
+                       ORDER BY SUM(input_tokens) DESC""",
+                    (f"{today}T00:00:00",),
+                ).fetchall()
+            lines = [f"API usage for {today}:\n"]
+            total_cost = 0.0
+            for model, inp, out, calls in rows:
+                rates = _MODEL_COSTS.get(model, _DEFAULT_COST)
+                cost  = (inp or 0) / 1_000_000 * rates["input"] + \
+                        (out or 0) / 1_000_000 * rates["output"]
+                total_cost += cost
+                lines.append(
+                    f"  {model}\n"
+                    f"    Calls:  {calls}\n"
+                    f"    Input:  {inp:,} tokens\n"
+                    f"    Output: {out:,} tokens\n"
+                    f"    Cost:   ${cost:.4f}\n"
+                )
+            lines.append(f"\nTotal today: ${total_cost:.4f}")
+            content = "\n".join(lines)
+        except Exception as e:
+            content = f"Usage DB error: {e}"
+        return {"content": content}
+
+    elif panel_type == "jobs":
+        if not _job_cache:
+            content = "No job search results yet.\nTry: 'search python jobs in Adelaide'"
+        else:
+            jobs = next(iter(_job_cache.values()), [])
+            content = format_jobs(jobs) if jobs else "No jobs found."
+        return {"content": content}
+
+    else:
+        return {"content": f"Unknown panel: {panel_type}"}
+
+

@@ -1,0 +1,346 @@
+/* ── Reset & base ─────────────────────────────────────────────────────────── */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+    background: #0d1117;
+    color: #e6edf3;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ── Top bar ──────────────────────────────────────────────────────────────── */
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 24px;
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    flex-shrink: 0;
+}
+
+.logo {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-right: 12px;
+}
+
+.topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.topbar-right {
+    color: #8b949e;
+    font-size: 0.9rem;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #3fb950;
+    display: inline-block;
+}
+
+.status-dot.offline {
+    background: #f85149;
+}
+
+.status-text {
+    color: #8b949e;
+    font-size: 0.85rem;
+}
+
+/* ── Main layout ──────────────────────────────────────────────────────────── */
+.layout {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 0;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* ── Cards column ─────────────────────────────────────────────────────────── */
+.cards-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: #30363d;
+    border-right: 1px solid #30363d;
+    overflow-y: auto;
+}
+
+.card {
+    background: #161b22;
+    padding: 16px 20px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-bottom: 1px solid #21262d;
+}
+
+.card:hover {
+    background: #1c2128;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.card-icon {
+    font-size: 1rem;
+}
+
+.card-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    flex: 1;
+}
+
+.card-badge {
+    background: #21262d;
+    color: #8b949e;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+.card-badge.alert {
+    background: #da3633;
+    color: #fff;
+}
+
+.card-badge.ok {
+    background: #238636;
+    color: #fff;
+}
+
+.card-preview {
+    font-size: 0.8rem;
+    color: #8b949e;
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+/* ── Chat column ──────────────────────────────────────────────────────────── */
+.chat-column {
+    display: flex;
+    flex-direction: column;
+    background: #0d1117;
+    overflow: hidden;
+}
+
+.chat-header {
+    padding: 16px 24px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border-bottom: 1px solid #21262d;
+    background: #161b22;
+    flex-shrink: 0;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.message {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 80%;
+}
+
+.user-message {
+    align-self: flex-end;
+    align-items: flex-end;
+}
+
+.ghost-message {
+    align-self: flex-start;
+    align-items: flex-start;
+}
+
+.message-sender {
+    font-size: 0.75rem;
+    color: #8b949e;
+    font-weight: 600;
+}
+
+.message-text {
+    background: #21262d;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.user-message .message-text {
+    background: #1f6feb;
+    color: #fff;
+    border-radius: 12px 12px 2px 12px;
+}
+
+.ghost-message .message-text {
+    background: #21262d;
+    border-radius: 12px 12px 12px 2px;
+}
+
+.chat-input-row {
+    display: flex;
+    gap: 8px;
+    padding: 16px 24px;
+    border-top: 1px solid #21262d;
+    background: #161b22;
+    flex-shrink: 0;
+}
+
+.chat-input-row input {
+    flex: 1;
+    background: #21262d;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: #e6edf3;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.chat-input-row input:focus {
+    border-color: #1f6feb;
+}
+
+.chat-input-row button {
+    background: #1f6feb;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.chat-input-row button:hover {
+    background: #388bfd;
+}
+
+/* ── Slide-out panel ──────────────────────────────────────────────────────── */
+.panel-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 100;
+}
+
+.panel-overlay.active {
+    display: block;
+}
+
+.slide-panel {
+    position: fixed;
+    top: 0;
+    right: -480px;
+    width: 480px;
+    height: 100vh;
+    background: #161b22;
+    border-left: 1px solid #30363d;
+    z-index: 101;
+    display: flex;
+    flex-direction: column;
+    transition: right 0.25s ease;
+}
+
+.slide-panel.active {
+    right: 0;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #30363d;
+    flex-shrink: 0;
+}
+
+.panel-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.panel-close {
+    background: none;
+    border: none;
+    color: #8b949e;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background 0.15s;
+}
+
+.panel-close:hover {
+    background: #21262d;
+    color: #e6edf3;
+}
+
+.panel-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    color: #e6edf3;
+}
+
+/* ── Scrollbar styling ────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #30363d;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #484f58;
+}
+
+/* ── Loading animation ────────────────────────────────────────────────────── */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+.loading {
+    animation: pulse 1.5s infinite;
+    color: #8b949e;
+}
