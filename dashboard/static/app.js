@@ -127,8 +127,9 @@ function updateCards(data) {
     // Devices
     if (data.devices) {
         const d = data.devices;
-        document.getElementById('devices-preview').textContent =
-            `ThinkPad: CPU ${d.thinkpad?.cpu ?? '—'}% | RAM ${d.thinkpad?.ram ?? '—'}%`;
+        let preview = `ThinkPad: CPU ${d.thinkpad?.cpu ?? '—'}% | RAM ${d.thinkpad?.ram ?? '—'}%`;
+        if (d.mac) preview += `\nMac: CPU ${d.mac.cpu ?? '—'}% | RAM ${d.mac.ram ?? '—'}%`;
+        document.getElementById('devices-preview').textContent = preview;
         document.getElementById('devices-badge').textContent = 'Online';
         document.getElementById('devices-badge').className = 'card-badge ok';
     }

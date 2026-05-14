@@ -668,7 +668,7 @@ async def ws_chat(websocket: WebSocket):
 
     except WebSocketDisconnect:
         pass
-    
+
 @app.websocket("/ws/{device_id}")
 async def websocket_endpoint(websocket: WebSocket, device_id: str):
     """
@@ -764,6 +764,17 @@ async def api_status(_: str = Depends(verify_token)):
     thinkpad = await asyncio.to_thread(_local_metrics)
     result["devices"] = {"thinkpad": thinkpad}
 
+    # ── Mac (remote via SSH) ──────────────────────────────────────────────────
+    from monitor.poller import _get_remote_metrics
+    if config.MAC_HOST and config.MAC_USER:
+        mac = await asyncio.to_thread(_get_remote_metrics, config.MAC_HOST, config.MAC_USER)
+        if mac:
+            result["devices"]["mac"] = {
+                "cpu":  mac["cpu_pct"],
+                "ram":  mac["ram_pct"],
+                "disk": mac["disk_pct"],
+            }
+
     try:
         from agents.github_agent import get_open_prs, get_open_issues
         repos = config.GITHUB_REPOS or []
@@ -818,6 +829,19 @@ async def api_panel(panel_type: str, _: str = Depends(verify_token)):
             f"  Disk:  {tp['disk']}%\n"
             f"  OS:    {platform.platform()}\n"
         )
+
+        from monitor.poller import _get_remote_metrics
+        if config.MAC_HOST and config.MAC_USER:
+            mac = await asyncio.to_thread(_get_remote_metrics, config.MAC_HOST, config.MAC_USER)
+            if mac:
+                content += (
+                    f"\nMac (remote)\n"
+                    f"  CPU:   {mac['cpu_pct']}%\n"
+                    f"  RAM:   {mac['ram_pct']}%\n"
+                    f"  Disk:  {mac['disk_pct']}%\n"
+                    f"  OS:    {mac.get('os', '—')}\n"
+                )
+
         return {"content": content}
 
     elif panel_type == "github":

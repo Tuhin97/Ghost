@@ -84,16 +84,19 @@ def _get_remote_metrics(host: str, user: str) -> Optional[dict]:
     # This is the command we'll run on the remote machine
     # json.dumps makes the output easy to parse back here
     remote_cmd = (
-        "python3 -c \""
+        "/opt/anaconda3/bin/python3 -c \""
         "import psutil, json; "
+        "import platform; "
         "print(json.dumps({"
         "'cpu_pct': psutil.cpu_percent(interval=1), "
         "'ram_pct': psutil.virtual_memory().percent, "
-        "'disk_pct': psutil.disk_usage('/').percent"
+        "'disk_pct': psutil.disk_usage('/').percent, "
+        "'os': platform.platform()"
         "}))\""
     )
 
     client = paramiko.SSHClient()
+    client.load_system_host_keys()
     client.set_missing_host_key_policy(paramiko.RejectPolicy())
 
     key_path = config.SSH_KEY_PATH.replace("~", f"/home/{config.LINUX_USER}")

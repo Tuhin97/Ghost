@@ -344,3 +344,35 @@ body {
     animation: pulse 1.5s infinite;
     color: #8b949e;
 }
+
+@media (max-width: 768px) {
+    body {
+        overflow: auto;
+        height: auto;
+    }
+
+    .layout {
+        grid-template-columns: 1fr;
+        height: auto;
+        overflow: visible;
+    }
+
+    .cards-column {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #30363d;
+    }
+
+    .chat-column {
+        height: 70vh;
+    }
+
+    .slide-panel {
+        width: 100%;
+        right: -100%;
+    }
+
+    .slide-panel.active {
+        right: 0;
+    }
+}
