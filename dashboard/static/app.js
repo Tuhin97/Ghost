@@ -1,14 +1,39 @@
 // ── State ─────────────────────────────────────────────────────────────────
-const TOKEN = localStorage.getItem('ghost_token') || promptForToken();
+const TOKEN = localStorage.getItem('ghost_token');
 let ws = null;
 let statusData = {};
 let conversationHistory = [];
 const MAX_HISTORY = 4;
 
-function promptForToken() {
-    const token = prompt('Enter your Ghost API token:');
-    if (token) localStorage.setItem('ghost_token', token);
-    return token;
+if (!TOKEN) {
+    showTokenScreen();
+}
+
+function showTokenScreen() {
+    document.body.innerHTML = `
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background:#0d1117;color:#e6edf3;gap:16px;">
+            <span style="font-size:3rem;">👻</span>
+            <h2 style="font-weight:700;">Ghost</h2>
+            <p style="color:#8b949e;">Enter your device token to continue</p>
+            <input id="token-input" type="password" placeholder="Paste token here..."
+                style="background:#21262d;border:1px solid #30363d;border-radius:8px;padding:12px 16px;color:#e6edf3;width:400px;font-size:0.9rem;outline:none;">
+            <button onclick="saveToken()"
+                style="background:#1f6feb;color:#fff;border:none;border-radius:8px;padding:12px 32px;font-size:0.95rem;font-weight:600;cursor:pointer;">
+                Connect
+            </button>
+        </div>
+    `;
+    document.getElementById('token-input').addEventListener('keydown', e => {
+        if (e.key === 'Enter') saveToken();
+    });
+}
+
+function saveToken() {
+    const token = document.getElementById('token-input').value.trim();
+    if (token) {
+        localStorage.setItem('ghost_token', token);
+        location.reload();
+    }
 }
 
 // ── Clock ──────────────────────────────────────────────────────────────────
@@ -220,7 +245,8 @@ async function loadPanelContent(type) {
 }
 
 // ── Init ───────────────────────────────────────────────────────────────────
-connectWebSocket();
-fetchStatus();
-// Refresh status every 30 seconds
-setInterval(fetchStatus, 30000);
+if (TOKEN) {
+    connectWebSocket();
+    fetchStatus();
+    setInterval(fetchStatus, 30000);
+}
