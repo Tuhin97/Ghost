@@ -240,6 +240,8 @@ Port 8000 is only reachable via Tailscale. SSH remains open for local access.
 | 6       | Agents: browser, Mac, jobs, coding, GitHub |
 | 7–8     | Dashboard, Tailscale, UFW, systemd |
 | 9       | Desktop app (pywebview + pystray), PWA for mobile |
-| 10      | Automated job pipeline: daily LinkedIn scrape → CV tailoring → email (n8n-style scheduled agent) |
-| 11–14   | Local LLM (Qwen 2.5 3B + LoRA fine-tuning), self-healing code |
-| 15–16   | Neo4j knowledge graph, smart home, distributed inference |
+| 10      | Automated job pipeline: n8n self-hosted → Ghost API integration |
+| 11      | PWA for mobile (Samsung + iPhone) |
+| 12      | Ghost-native workflow engine (n8n-style: visual pipelines, scheduled agents) |
+| 13–16   | Local LLM (Qwen 2.5 3B + LoRA fine-tuning), self-healing code |
+| 17–18   | Neo4j knowledge graph, smart home, distributed inference |

@@ -50,7 +50,8 @@ from agents.calendar_agent import get_events, create_event
 from monitor.poller import start_poller
 from monitor.mqtt_subscriber import start_subscriber
 from monitor.briefing import start_briefing
-
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from agents.job_pipeline import run_pipeline
 
 # ── Rate limiter ──────────────────────────────────────────────────────────────
 # get_remote_address extracts the client's IP from the request
@@ -124,6 +125,16 @@ async def lifespan(app: FastAPI):
     # Start morning briefing scheduler as a background task
     # Checks every 60 seconds if it's time to send the briefing
     briefing_task = asyncio.create_task(start_briefing(ws_manager))
+        # Start job pipeline scheduler
+    scheduler = AsyncIOScheduler()
+    scheduler.add_job(
+        lambda: asyncio.create_task(asyncio.to_thread(run_pipeline, claude)),
+        trigger="cron",
+        hour=config.JOB_PIPELINE_SCHEDULE_HOUR,
+        minute=0,
+        timezone="Australia/Adelaide",
+    )
+    scheduler.start()
 
 
     yield  # Server runs here — between startup and shutdown

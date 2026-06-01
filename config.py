@@ -99,6 +99,19 @@ LINKEDIN_EMAIL: str    = _optional("LINKEDIN_EMAIL")
 LINKEDIN_PASSWORD: str = _optional("LINKEDIN_PASSWORD")
 CV_PATH: str = _optional("CV_PATH", "~/Documents/Tuhin_CV_Master.docx")
 
+# ── Apify ─────────────────────────────────────────────────────────────────────
+APIFY_API_TOKEN: str = _optional("APIFY_API_TOKEN")
+
+# ── Job Pipeline ──────────────────────────────────────────────────────────────
+JOB_PIPELINE_EMAIL: str = _optional("JOB_PIPELINE_EMAIL", "")
+JOB_PIPELINE_KEYWORDS: list = [
+    k.strip() for k in _optional("JOB_PIPELINE_KEYWORDS", "python,data science,AI").split(",") if k.strip()
+]
+JOB_PIPELINE_LOCATION: str        = _optional("JOB_PIPELINE_LOCATION", "Adelaide")
+JOB_PIPELINE_SCORE_THRESHOLD: int = int(_optional("JOB_PIPELINE_SCORE_THRESHOLD", "65"))
+JOB_PIPELINE_SCHEDULE_HOUR: int   = int(_optional("JOB_PIPELINE_SCHEDULE_HOUR", "8"))
+JOB_PIPELINE_MAX_JOBS: int        = int(_optional("JOB_PIPELINE_MAX_JOBS", "10"))
+
 # ── Home Assistant ────────────────────────────────────────────────────────────
 HOME_ASSISTANT_URL: str   = _optional("HOME_ASSISTANT_URL")
 HOME_ASSISTANT_TOKEN: str = _optional("HOME_ASSISTANT_TOKEN")

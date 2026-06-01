@@ -264,7 +264,7 @@ def _read_cv() -> str:
         return cv_path.read_text(encoding="latin-1")
 
 
-def score_match(job: dict, claude_client, model: str) -> str:
+def score_match(job: dict, claude_client, model: str, cv_text: str = None) -> str:
     """
     Score how well the user's CV matches a job description.
 
@@ -276,7 +276,8 @@ def score_match(job: dict, claude_client, model: str) -> str:
     Returns:
         match score and analysis as string
     """
-    cv_text = _read_cv()
+    if cv_text is None:
+        cv_text = _read_cv()
 
     prompt = (
         f"Analyse how well this CV matches the job description.\n\n"
@@ -336,7 +337,7 @@ def tailor_resume(job: dict, claude_client, model: str) -> str:
     try:
         response = claude_client.messages.create(
             model=model,
-            max_tokens=1024,
+            max_tokens=4096,
             messages=[{"role": "user", "content": prompt}],
         )
         tailored = response.content[0].text.strip()
