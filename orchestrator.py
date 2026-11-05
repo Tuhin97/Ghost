@@ -43,7 +43,7 @@ from agents.file_agent import search_files, format_results
 from agents.browser_agent import search_and_summarise
 from agents.coding_loop import run_coding_task
 from agents.github_agent import get_repo_summary, monitor_all_repos, get_all_repos
-from agents.job_agent import search_jobs, format_jobs, draft_cover_letter, score_match, tailor_resume, fetch_job_from_url
+from agents.job_agent import search_jobs, format_jobs, draft_cover_letter, score_match, tailor_resume
 from agents.mac_agent import find_file, open_app, open_url, list_files, get_running_apps, get_mac_stats
 from agents.email_agent import read_emails, send_email, format_emails_for_display
 from agents.calendar_agent import get_events, create_event
@@ -449,7 +449,6 @@ async def _dispatch(action: dict, device_id: str) -> str:
         location = params.get("location", "Adelaide")
         remote   = params.get("remote", False)
         subaction = params.get("subaction", "search")
-        job_url  = params.get("url", "")
         job_index = params.get("job_index", 0)
 
         try:
@@ -474,14 +473,6 @@ async def _dispatch(action: dict, device_id: str) -> str:
                 cover = draft_cover_letter(job, claude, config.MODEL_SMART)
                 resume = tailor_resume(job, claude, config.MODEL_SMART)
                 return f"{resume}\n\n---\nCOVER LETTER:\n{cover}"
-
-            elif subaction == "fetch_url":
-                if not job_url:
-                    return "Please provide a LinkedIn job URL."
-                description = await fetch_job_from_url(job_url)
-                job = {"title": "From URL", "company": "From URL", "description": description}
-                _job_cache[device_id] = [job]
-                return f"Job fetched. Say 'score match' or 'tailor resume' to proceed."
 
         except Exception as e:
             return f"Job search failed: {e}"

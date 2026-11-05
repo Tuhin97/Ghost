@@ -2,7 +2,7 @@
 agents/job_pipeline.py — Daily job application pipeline.
 
 Flow:
-  1. Scrape LinkedIn jobs via Apify
+  1. Search for jobs via the Adzuna API
   2. Score each job against CV
   3. For jobs above threshold: tailor resume + generate cover letter
   4. Upload tailored resume to Google Docs
@@ -17,8 +17,7 @@ import logging
 from datetime import datetime
 
 import config
-from agents.apify_agent import scrape_linkedin_jobs
-from agents.job_agent import score_match, tailor_resume, draft_cover_letter, _read_cv
+from agents.job_agent import search_jobs, score_match, tailor_resume, draft_cover_letter, _read_cv
 from agents.gdocs_agent import upload_resume_as_doc
 from agents.excel_agent import build_tracker
 from agents.email_agent import send_email
@@ -49,23 +48,25 @@ def run_pipeline(claude_client) -> str:
     date_str = datetime.now().strftime("%Y-%m-%d")
     logger.info("=== Job pipeline starting: %s ===", date_str)
 
-    # Step 1 — scrape LinkedIn
-    logger.info("Scraping LinkedIn jobs...")
+    # Step 1 — search Adzuna
+    logger.info("Searching for jobs...")
     try:
-        jobs = scrape_linkedin_jobs(
+        jobs = search_jobs(
             keywords=config.JOB_PIPELINE_KEYWORDS,
             location=config.JOB_PIPELINE_LOCATION,
-            max_jobs=config.JOB_PIPELINE_MAX_JOBS,
-        )
+        )[:config.JOB_PIPELINE_MAX_JOBS]
     except Exception as e:
-        logger.error("Apify scrape failed: %s", e)
-        return f"Pipeline failed at scraping: {e}"
+        logger.error("Job search failed: %s", e)
+        return f"Pipeline failed at job search: {e}"
 
     if not jobs:
-        logger.warning("No jobs returned from Apify")
+        logger.warning("No jobs returned from Adzuna")
         return "No jobs found today."
 
-    logger.info("Scraped %d jobs", len(jobs))
+    for job in jobs:
+        job["apply_url"] = job.get("url", "")
+
+    logger.info("Found %d jobs", len(jobs))
 
     # Step 2 — score, tailor, upload for each job
     processed = []
@@ -124,7 +125,7 @@ def run_pipeline(claude_client) -> str:
     lines = [
         f"Ghost Job Pipeline — {date_str}",
         f"",
-        f"Scraped {len(processed)} jobs. {len(above_threshold)} above {config.JOB_PIPELINE_SCORE_THRESHOLD}% match threshold.",
+        f"Found {len(processed)} jobs. {len(above_threshold)} above {config.JOB_PIPELINE_SCORE_THRESHOLD}% match threshold.",
         f"",
     ]
 

@@ -48,12 +48,11 @@ Action catalogue:
   web_search    → params: { "query": str }
   open_url      → params: { "url": str }
   run_code      → params: { "task": str, "repo": str or null }  # use MODEL_BEST, repo defaults to ~/Projects if not specified
-  job_search    → params: { "subaction": "search|score|tailor|fetch_url", "keywords": [str], "location": str, "remote": bool, "job_index": int or null, "url": str or null }
+  job_search    → params: { "subaction": "search|score|tailor", "keywords": [str], "location": str, "remote": bool, "job_index": int or null }
   # subaction examples:
   # "search for python jobs in Adelaide" → subaction: search
   # "score my match for job 1" or "how well do i match job 2" → subaction: score, job_index: 1
   # "tailor my resume for job 3" or "write cover letter for job 2" → subaction: tailor, job_index: 3
-  # "fetch job from url https://..." → subaction: fetch_url, url: "..."
   smarthome     → params: { "action": str, "entity": str or null }
   device_status → params: {}
   github_monitor → params: { "subaction": "monitor|repo_summary|list_repos", "repo": str or null }
