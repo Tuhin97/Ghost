@@ -165,63 +165,6 @@ def draft_cover_letter(job: dict, claude_client, model: str) -> str:
         logger.error("Cover letter generation failed: %s", e)
         return f"Could not generate cover letter: {e}"
     
-async def fetch_job_from_url(url: str) -> str:
-    """
-    Fetch job description from a LinkedIn URL using Playwright.
-
-    Logs into LinkedIn, navigates to the job page, extracts the
-    full job description text.
-
-    Args:
-        url: LinkedIn job URL
-
-    Returns:
-        job description as plain text
-    """
-    import asyncio
-    from playwright.async_api import async_playwright
-    from playwright_stealth import stealth_async
-
-    if not config.LINKEDIN_EMAIL or not config.LINKEDIN_PASSWORD:
-        raise RuntimeError("LinkedIn credentials not configured in .env")
-
-    async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
-        page    = await browser.new_page()
-
-        # Apply stealth — hides Playwright fingerprint from bot detection
-        await stealth_async(page)
-
-        try:
-            # Step 1 — log into LinkedIn with human-like delays
-            await page.goto("https://www.linkedin.com/login")
-            await asyncio.sleep(1)
-            await page.fill("#username", config.LINKEDIN_EMAIL)
-            await asyncio.sleep(0.5)
-            await page.fill("#password", config.LINKEDIN_PASSWORD)
-            await asyncio.sleep(0.8)
-            await page.click('[type="submit"]')
-            await page.wait_for_load_state("networkidle")
-
-            # Step 2 — navigate to job page
-            await page.goto(url)
-            await page.wait_for_load_state("networkidle")
-
-            # Step 3 — click "Show more" if present to expand description
-            try:
-                await page.click(".jobs-description__footer-button", timeout=3000)
-            except Exception:
-                pass  # Button not always present
-
-            # Step 4 — extract job description text
-            description = await page.inner_text(".jobs-description__content")
-            return description.strip()
-
-        except Exception as e:
-            raise RuntimeError(f"Could not fetch job from LinkedIn: {e}")
-        finally:
-            await browser.close()
-    
 def _read_cv() -> str:
     cv_path = Path(config.CV_PATH).expanduser()
 
@@ -269,7 +212,7 @@ def score_match(job: dict, claude_client, model: str, cv_text: str = None) -> st
     Score how well the user's CV matches a job description.
 
     Args:
-        job:           job dict from search_jobs() or fetch_job_from_url()
+        job:           job dict from search_jobs()
         claude_client: Anthropic client from orchestrator
         model:         which Claude model to use
 

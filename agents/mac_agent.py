@@ -22,8 +22,8 @@ import config
 logger = logging.getLogger(__name__)
 
 # SSH connection details
-MAC_USER = "tuhinanand"
-MAC_HOST = "192.168.0.67"
+MAC_USER = config.MAC_USER
+MAC_HOST = config.MAC_HOST
 SSH_TIMEOUT = 10  # seconds
 
 

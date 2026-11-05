@@ -94,13 +94,8 @@ GITHUB_REPOS: list  = [
     if r.strip()
 ]
 
-# ── LinkedIn ─────────────────────────────────────────────────────────────────
-LINKEDIN_EMAIL: str    = _optional("LINKEDIN_EMAIL")
-LINKEDIN_PASSWORD: str = _optional("LINKEDIN_PASSWORD")
+# ── Job search ───────────────────────────────────────────────────────────────
 CV_PATH: str = _optional("CV_PATH", "~/Documents/Tuhin_CV_Master.docx")
-
-# ── Apify ─────────────────────────────────────────────────────────────────────
-APIFY_API_TOKEN: str = _optional("APIFY_API_TOKEN")
 
 # ── Job Pipeline ──────────────────────────────────────────────────────────────
 JOB_PIPELINE_EMAIL: str = _optional("JOB_PIPELINE_EMAIL", "")

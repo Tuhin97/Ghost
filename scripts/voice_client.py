@@ -40,9 +40,9 @@ def _normalize_voice_text(text: str) -> str:
     Fix common voice transcription artifacts before sending to Ghost.
 
     faster-whisper transcribes spoken email addresses like:
-      "shadowkid020 at gmail dot com"
+      "name at example dot com"
     but Ghost needs:
-      "shadowkid020@gmail.com"
+      "name@example.com"
     """
     text = re.sub(r'\s+at\s+', '@', text)
     text = re.sub(r'\s+dot\s+', '.', text)

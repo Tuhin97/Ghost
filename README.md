@@ -1,5 +1,7 @@
 # Ghost
 
+> **Status: work in progress.** Ghost is a personal system I built with Claude Code and use daily. I'm still actively developing it. Test coverage and CI are next, so `tests/` only contains placeholders for now.
+
 A self-hosted personal AI assistant running on a ThinkPad (Debian Trixie). Ghost controls your devices, monitors your digital life, and responds via voice, dashboard, or any device on your Tailscale network.
 
 ---
@@ -78,7 +80,7 @@ venv/bin/pip install -r requirements.txt
 cp .env.example .env
 ```
 
-Fill in `.env`:
+Fill in `.env`. The main values are:
 
 ```env
 # Required
@@ -234,7 +236,7 @@ Port 8000 is only reachable via Tailscale. SSH remains open for local access.
 
 ## Roadmap
 
-| Weekend | Feature |
+| Stage | Feature |
 |---------|---------|
 | 1–5     | Core: auth, memory, email, calendar, voice |
 | 6       | Agents: browser, Mac, jobs, coding, GitHub |
